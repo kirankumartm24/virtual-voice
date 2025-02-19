@@ -7,6 +7,8 @@ import websites
 def googleSearch(query):
 	if 'image' in query:
 		query += "&tbm=isch"
+	#query = re.sub(r'\b(images|image|search|show|google|tell me about|for)\b', '', query)
+
 	query = query.replace('images', '')
 	query = query.replace('image', '')
 	query = query.replace('search', '')
@@ -18,6 +20,8 @@ def googleSearch(query):
 	return "Here you go..."
 
 def youtube(query):
+	#query = re.sub(r'\b(on youtube|play|youtube)\b', '', query)
+
 	query = query.replace('play', ' ')
 	query = query.replace('on youtube', ' ')
 	query = query.replace('youtube', ' ')

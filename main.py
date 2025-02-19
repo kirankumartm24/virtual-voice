@@ -2,17 +2,14 @@ import os
 import logging
 import pyttsx3
 import speech_recognition as sr
-import sys
 import re
 from gmail import *
 from api import *
 from system_operation import *
 from browsing import *
-import nltk
 from nltk.tokenize import word_tokenize
-'''from keras_preprocessing.sequence import pad_sequences 
-import numpy as np 
-from keras.models import load_model  '''
+import webbrowser
+import datetime
 
 logging.disable(logging.WARNING)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -26,22 +23,6 @@ sys_ops = SystemTasks()
 tab_ops = TabOpt()
 win_ops = WindowOpt()
 
-'''model = load_model('..\\Data\\chat_model') 
-# load tokenizer object 
-with open('..\\Data\\tokenizer.pickle', 'rb') as handle: 
-tokenizer = load(handle) 
-# load label encoder object 
-with open('..\\Data\\label_encoder.pickle', 'rb') as enc: 
-lbl_encoder = load(enc) 
-def chat(text): 
-    # parameters 
-    max_len = 20 
-    while True: 
-        result =model.predict(pad_sequences(tokenizer.texts_to_sequences([text]),truncating='post', maxlen=max_len), verbose=False) 
-        intent =lbl_encoder.inverse_transform([np.argmax(result)])[0] 
-return intent '''
-
-
 def speak(text):
     print("ASSISTANT -> " + text)
     try:
@@ -50,12 +31,11 @@ def speak(text):
     except (KeyboardInterrupt, RuntimeError):
         return
 
-
 def record():
     with sr.Microphone() as mic:
         recognizer.adjust_for_ambient_noise(mic)
-        #recognizer.dynamic_energy_threshold = True
-        recognizer.energy_threshold =50000
+        recognizer.dynamic_energy_threshold = True
+        #recognizer.energy_threshold =50000
         print("Listening...")
         audio = recognizer.listen(mic)
         try:
@@ -74,7 +54,8 @@ def listen_audio():
                 continue
             else:
                 sentences = word_tokenize(response)
-                main(sentences)
+                ses= " ".join(sentences)
+                main(ses)
     except KeyboardInterrupt:
         return
 
@@ -100,7 +81,9 @@ def main(query):
         get_map(query)
         speak("Here are the map results.")
         done = True
-
+    elif "open instagram" in query:
+        speak("Opening Instagram...")
+        webbrowser.open("https://instagram.com/")
     # Jokes and news
     elif "joke" in query:
         joke = get_joke()
@@ -112,6 +95,12 @@ def main(query):
         if news:
             speak(news)
             done = True
+    elif "time" in query:
+        current_time = datetime.datetime.now().strftime("%I:%M %p")
+        speak(f"The time is {current_time}")
+    elif "date" in query:
+        current_date = datetime.datetime.now().strftime("%d %B, %Y")
+        speak(f"Today's date is {current_date}")
 
     # System operations
     elif "ip" in query or "current location" in query:
@@ -178,7 +167,7 @@ def main(query):
         speak("thank you!")
         exit(0)
     if not done:
-                answer =googleSearch(query)
+                answer =tell_me_about(query)
                 if answer:
                     speak(answer)
                 else:
@@ -187,7 +176,5 @@ def main(query):
 
 
 if __name__ == "__main__":
-    try:
-        listen_audio()
-    except Exception as e:
-        print("Exited due to an error:", e)
+    listen_audio()
+
