@@ -94,16 +94,6 @@ def get_weather(city=''):
                f'Visibility: {int(response["visibility"] / 1000)} km.'
     return weather
 
-def get_general_response(query):
-    client = Client(app_id=WOLFRAMALPHA)
-    try:
-        response = client.query(query)
-        return next(response.results).text
-    except (StopIteration, AttributeError) as e:
-        return None
-    except KeyboardInterrupt:
-        return None
-
 def get_popular_movies():
     try:
         response = requests.get(f"https://api.themoviedb.org/3/movie/popular?api_key={TMDB}&region=IN&sort_by=popularity.desc&"f"primary_release_year={datetime.date.today().year}").json()

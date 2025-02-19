@@ -115,9 +115,9 @@ class WindowOpt:
 
 def app_path(app):
     app_paths = {'access': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\ACCICONS.exe',
-                 'powerpoint': 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs',
-                 'word': 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs',
-                 'excel': 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs',
+                 'power point': 'C:\\ProgramData\\Microsoft\\Windows\\Start Menu\\Programs',
+                 'word': 'C:\\ProgramData\Microsoft\\Windows\\Start Menu\\Programs',
+                 'excel': 'C:\\ProgramData\Microsoft\\Windows\\Start Menu\\Programs',
                  'outlook': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\OUTLOOK.exe',
                  'onenote': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\ONENOTE.exe',
                  'publisher': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\MSPUB.exe',
@@ -132,7 +132,7 @@ def app_path(app):
 
 
 def open_app(query):
-    ms_office = ('access', 'powerpoint','visual studio', 'word', 'excel', 'outlook', 'onenote', 'publisher', 'sharepoint', 'infopath designer','infopath filler','whatsapp')
+    ms_office = ('access', 'power point','visual studio', 'word', 'excel', 'outlook', 'onenote', 'publisher', 'sharepoint', 'infopath designer','infopath filler','whatsapp')
     for app in ms_office:
         if app in query:
             path = app_path(app)
