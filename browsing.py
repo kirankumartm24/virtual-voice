@@ -33,13 +33,20 @@ def youtube(query):
 	return "Enjoy..."
 
 def open_specified_website(query):
-	website = query[5:] #re.search(r'[a-zA-Z]* (.*)', query)[1]
-	if website in websites.websites_dict:
-		url = websites.websites_dict[website]
-		webbrowser.open(url)
-		return True
+	match = re.search(r"(open|go to|visit)?\s*([\w.-]+)", query, re.IGNORECASE)
+	if match:
+		website = match.group(2).lower()  # Extract the website name
+		if website in websites.websites_dict:  # Access the imported dictionary
+			url = websites.websites_dict[website]
+			webbrowser.open(url)
+			print(f"Opening {website}...")
+			return True
+		else:
+			print(f"Sorry, I don't have {website} in my database.")
+			return False
 	else:
-		return None
+		print("Invalid query format.")
+		return False
 
 def tell_me_about(query):
 	try:
