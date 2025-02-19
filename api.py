@@ -3,14 +3,16 @@ import datetime
 import re
 import requests
 from wolframalpha import Client
+from newsapi import NewsApiClient
 
 # Replace the API keys here directly or use environment variables
-NEWS = 'your_news_api_key'  # Replace with your NewsAPI key
+NEWS = 'e6d882611c8b46c0abe512bacd551144'  # Replace with your NewsAPI key
 WOLFRAMALPHA = 'your_wolframalpha_api_key'  # Replace with your WolframAlpha API key
 API_KEY = '37b8d347a274e6b7599dfdb037c12d3b'
 TMDB = 'your_tmdb_api_key'  # Replace with your TMDB API key
 
-#news = NewsApiClient(api_key=NEWS)
+news = NewsApiClient(api_key=NEWS)
+
 
 def get_ip(_return=False):
     try:
@@ -32,18 +34,47 @@ def get_joke():
         return None
     except requests.exceptions.RequestException:
         return None
+import requests
+import re
 
-def get_news():
-    try:
-        top_news = ""
-        top_headlines = news.get_top_headlines(language="en", country="in")
-        for i in range(10):
-             top_news += re.sub(r'[|-] [A-Za-z0-9 |:.]*', '', top_headlines['articles'][i]['title']).replace("’", "'") + '\n'
-        return top_news
-    except KeyboardInterrupt:
+def get_new():
+    print("ok")
+    categories = ['business', 'entertainment', 'general', 'health', 'science', 'sports', 'technology']
+    all_important_news = []
+    print("ok")
+    for category in categories:
+        try:
+            important_news = []
+            print(f"\nFetching top headlines for category: {category}")
+            top_headlines = news.get_top_headlines(country="us", category=category)
+            
+            # Loop through articles and filter important headlines
+            for i in range(min(5, len(top_headlines['articles']))):
+                title = top_headlines['articles'][i]['title']
+                clean_title = re.sub(r'[|-] [A-Za-z0-9 |:.]*', '', title).replace("’", "'")
+                if "breaking" in clean_title.lower() or "urgent" in clean_title.lower():
+                    important_news.append(clean_title)
+            
+            # If important news found, add it to all_important_news
+            if important_news:
+                print(f"\nImportant {category.capitalize()} News Headlines:")
+                for headline in important_news[:2]:  # Speak only the first 2 important headlines from each category
+                    print(f"- {headline}")
+                    all_important_news.append(headline)  # Accumulate important headlines
+        except KeyboardInterrupt:
+            print("Process interrupted. Exiting...")
+            return None
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching news for category {category}: {e}")
+            continue  # Continue with the next category if one fails
+
+    # Return all the important news headlines collected
+    if all_important_news:
+        return all_important_news
+    else:
+        print("No important news found.")
         return None
-    except requests.exceptions.RequestException:
-        return None
+
 
 def get_weather(city=''):
     if not city:

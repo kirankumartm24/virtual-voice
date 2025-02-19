@@ -1,12 +1,12 @@
-import math
-import psutil
+#import math
+#import psutil
 import time
 from random import randint
 import subprocess
 import AppOpener
 from pynput.keyboard import Key, Controller
 #from PIL import ImageGrab
-import wmi
+#import wmi
 
 
 class SystemTasks:
@@ -113,21 +113,18 @@ class WindowOpt:
         self.keyboard.release(Key.tab)
         self.keyboard.release(Key.alt_l)
 
-
-
-
-
 def app_path(app):
     app_paths = {'access': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\ACCICONS.exe',
-                 'powerpoint': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\POWERPNT.exe',
-                 'word': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\WINWORD.exe',
-                 'excel': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\EXCEL.exe',
+                 'powerpoint': 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs',
+                 'word': 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs',
+                 'excel': 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs',
                  'outlook': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\OUTLOOK.exe',
                  'onenote': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\ONENOTE.exe',
                  'publisher': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\MSPUB.exe',
                  'sharepoint': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\GROOVE.exe',
                  'infopath designer': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\INFOPATH.exe',
-                 'infopath filler': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\INFOPATH.exe'}
+                 'infopath filler': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\INFOPATH.exe',
+                 'whatsapp': ' '}
     try:
         return app_paths[app]
     except KeyError:
@@ -135,8 +132,7 @@ def app_path(app):
 
 
 def open_app(query):
-    ms_office = ('access', 'powerpoint', 'word', 'excel', 'outlook', 'onenote', 'publisher', 'sharepoint', 'infopath designer',
-                 'infopath filler')
+    ms_office = ('access', 'powerpoint','visual studio', 'word', 'excel', 'outlook', 'onenote', 'publisher', 'sharepoint', 'infopath designer','infopath filler','whatsapp')
     for app in ms_office:
         if app in query:
             path = app_path(app)
