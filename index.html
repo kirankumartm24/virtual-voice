@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Voice Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .chat-container {
+            width: 90%;
+            max-width: 400px;
+            height: 500px;
+            overflow-y: auto;
+            border-radius: 10px;
+            padding: 10px;
+            background-color: #1e1e1e;
+        }
+        .message {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 10px;
+            max-width: 75%;
+            display: inline-block;
+            word-wrap: break-word;
+        }
+        .user {
+            background-color: #0084ff;
+            align-self: flex-end;
+            margin-left: auto;
+        }
+        .bot {
+            background-color: #444;
+            align-self: flex-start;
+            margin-right: auto;
+        }
+        .mic-button {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 50%;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 20px;
+        }
+        .mic-button:active {
+            background-color: darkred;
+        }
+        .typing {
+            color: #aaa;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Voice Assistant</h1>
+    <div class="chat-container" id="chat-container"></div>
+    <button class="mic-button" id="mic-btn">🎤</button>
+
+    <script>
+        const chatContainer = document.getElementById("chat-container");
+        const micButton = document.getElementById("mic-btn");
+
+        const recognition = window.SpeechRecognition || window.webkitSpeechRecognition 
+            ? new (window.SpeechRecognition || window.webkitSpeechRecognition)()
+            : null;
+
+        if (recognition) {
+            recognition.lang = "en-US";
+            recognition.continuous = false;
+
+            recognition.onstart = () => {
+                micButton.style.backgroundColor = "darkred";
+            };
+
+            recognition.onend = () => {
+                micButton.style.backgroundColor = "red";
+            };
+
+            recognition.onresult = async (event) => {
+                const userText = event.results[0][0].transcript;
+                addMessage(userText, "user");
+                await fetchResponse(userText);
+            };
+        } else {
+            alert("Speech Recognition is not supported in this browser.");
+        }
+
+        function addMessage(text, sender) {
+            const msgDiv = document.createElement("div");
+            msgDiv.classList.add("message", sender);
+            msgDiv.textContent = text;
+            chatContainer.appendChild(msgDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function fetchResponse(userText) {
+            addMessage("Typing...", "bot");
+            
+            const response = await fetch("http://localhost:5000/voice", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: userText })
+            });
+
+            const data = await response.json();
+            document.querySelector(".typing").remove();
+
+            addMessage(data.reply, "bot");
+            speakText(data.reply);
+        }
+
+        function speakText(text) {
+            const speech = new SpeechSynthesisUtterance(text);
+            window.speechSynthesis.speak(speech);
+        }
+
+        micButton.addEventListener("click", () => {
+            if (recognition) {
+                recognition.start();
+            }
+        });
+    </script>
+
+</body>
+</html>

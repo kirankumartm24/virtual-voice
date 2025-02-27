@@ -1,13 +1,8 @@
-#import math
-#import psutil
 import time
 from random import randint
 import subprocess
 import AppOpener
 from pynput.keyboard import Key, Controller
-#from PIL import ImageGrab
-#import wmi
-
 
 class SystemTasks:
     def __init__(self):
@@ -123,8 +118,8 @@ def app_path(app):
                  'publisher': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\MSPUB.exe',
                  'sharepoint': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\GROOVE.exe',
                  'infopath designer': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\INFOPATH.exe',
-                 'infopath filler': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\INFOPATH.exe',
-                 'whatsapp': ' '}
+                 'infopath filler': 'C:\\Program Files (x86)\\Microsoft Office\\Office14\\INFOPATH.exe'
+                }
     try:
         return app_paths[app]
     except KeyError:

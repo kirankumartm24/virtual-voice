@@ -40,5 +40,6 @@ websites_dict = {
     #"discord": "https://discord.com/",
     "swiggy": "https://www.swiggy.com/",
     "zomato": "https://www.zomato.com/",
-    "spotify": "https://open.spotify.com/"
+    "spotify": "https://open.spotify.com/",
+    "instagram": "https://www.instagram.com/"
 }

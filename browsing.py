@@ -16,19 +16,22 @@ def googleSearch(query):
 	query = query.replace('google', '')
 	query = query.replace('tell me about', '')
 	query = query.replace('for', '')
+	query = query.replace('open','')
+
 	webbrowser.open("https://www.google.com/search?q=" + query)
 	return "Here you go..."
 
 def youtube(query):
 	#query = re.sub(r'\b(on youtube|play|youtube)\b', '', query)
 
-	query = query.replace('play', ' ')
+	query = query.replace('play',' ')
 	query = query.replace('on youtube', ' ')
 	query = query.replace('youtube', ' ')
+	query = query.replace('open',' ')
 
 	print("Searching for videos...")
 	print("Finished searching!")
-	video_url=(f'https://www.youtube.com/results?search_query={query.replace('','+')}')
+	video_url = f"https://www.youtube.com/results?search_query={query.replace(' ', '+')}"
 	webbrowser.open(video_url)
 	return "Enjoy..."
 

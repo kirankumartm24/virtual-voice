@@ -1,36 +1,51 @@
-import os
-import logging
 import pyttsx3
 import speech_recognition as sr
-import re
+import datetime
+import pickle
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+import logging
 from gmail import *
-from api import *
+from apl import *
 from system_operation import *
 from browsing import *
-from nltk.tokenize import word_tokenize
-import webbrowser
-import datetime
+from database import *
 
-logging.disable(logging.WARNING)
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+# Suppress TensorFlow warnings
+tf.get_logger().setLevel("ERROR")
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Load trained intent classification model
+model = tf.keras.models.load_model("intent_model.h5")
+
+# Load tokenizer and label encoder
+with open("tokenizer.pkl", "rb") as f:
+    tokenizer = pickle.load(f)
+with open("label_encoder.pkl", "rb") as f:
+    label_encoder = pickle.load(f)
+
+# Initialize speech recognition and text-to-speech
 recognizer = sr.Recognizer()
-
 engine = pyttsx3.init()
-engine.setProperty('rate', 185)
+engine.setProperty("rate", 185)
 
+# Initialize system operations
 sys_ops = SystemTasks()
 tab_ops = TabOpt()
 win_ops = WindowOpt()
 
 def speak(text):
-    print("ASSISTANT -> " + text)
+    """Convert text to speech."""
+    print("ASSISTANT ->", text)
     try:
         engine.say(text)
         engine.runAndWait()
-    except (KeyboardInterrupt, RuntimeError):
-        return
-
+    except (KeyboardInterrupt, RuntimeError) as e
+        logger.error(f"Error in text-to-speech: {e}")
 def record():
     with sr.Microphone() as mic:
         recognizer.adjust_for_ambient_noise(mic)
@@ -45,136 +60,141 @@ def record():
     print("USER -> " + text)
     return text
 
-
 def listen_audio():
+    """Continuously listen for audio commands."""
     try:
         while True:
             response = record()
-            if response is None:
-                continue
-            else:
-                sentences = word_tokenize(response)
-                ses= " ".join(sentences)
-                main(ses)
+            if response:
+                main(response)
     except KeyboardInterrupt:
+        logger.info("Exiting...")
         return
 
+def predict_intent(text):
+    sequence = tokenizer.texts_to_sequences([text.lower()])
+    if not sequence or not sequence[0]:  # Handle unknown words
+        return None
+    padded_sequence = pad_sequences(sequence, padding="post")  # Dynamic padding
+    print("Padded Sequence Shape:", padded_sequence.shape)  # Debugging Line
+
+    prediction = model.predict(padded_sequence)
+    predicted_label = label_encoder.inverse_transform([np.argmax(prediction)])
+    return predicted_label[0]
+
+
+def handle_email():
+    """Handle email-related tasks."""
+    speak("Please say the recipient's email address.")
+    receiver_id = sanitize_email(record())
+
+    while not receiver_id:
+        speak("Invalid email address. Please say it again.")
+        receiver_id = sanitize_email(record())
+
+    speak("Say the subject of the email.")
+    subject = record() or "No Subject"
+
+    speak("Say the body of the email.")
+    body = record() or "No Content"
+
+    if send_email(receiver_id, subject, body):
+        speak("Your email has been sent successfully.")
+    else:
+        speak("There was an error sending the email.")
+
+def get_time():
+    """Provide the current time."""
+    current_time = datetime.datetime.now().strftime('%I:%M %p')
+    speak(f"The time is {current_time}")
 
 def main(query):
+    """Process the user's command and execute the corresponding action."""
+    if not query:
+        speak("I didn't catch that. Please repeat.")
+        return "No input detected."
+
+    intent = predict_intent(query)
     done = False
-
-    # Simple greetings
-    if "hello" in query or "hi" in query:
+    # Mapping intents to functions
+    if intent == "get_time":
+        get_time()
+        done=True
+    elif intent == "greeting":
         speak("Hello! How can I assist you today?")
-        done = True
-
-    # Search related queries
-    elif "google" in query and "search" in query:
+        done=True
+    elif intent == "search_google":
         googleSearch(query)
         speak("Here are the results I found on Google.")
-        done = True
-    elif "youtube" in query and "search" in query or "play" in query or ("open" in query and "youtube" in query):
+        done=True
+    elif intent == "search_youtube":
         youtube(query)
         speak("Here are the results from YouTube.")
-        done = True
-    elif "map" in query or "distance" in query:
-        get_map(query)
-        speak("Here are the map results.")
-        done = True
-    elif "open instagram" in query:
-        speak("Opening Instagram...")
-        webbrowser.open("https://instagram.com/")
-    # Jokes and news
-    elif "joke" in query:
+        done=True
+    elif intent == "joke":
         joke = get_joke()
-        if joke:
-            speak(joke)
-            done = True
-    elif "news" in query:
+        speak(joke if joke else "Sorry, I couldn't find a joke right now.")
+        done=True
+    elif intent == "news":
         news = get_new()
-        if news:
-            speak(news)
-            done = True
-    elif "time" in query:
-        current_time = datetime.datetime.now().strftime("%I:%M %p")
-        speak(f"The time is {current_time}")
-    elif "date" in query:
-        current_date = datetime.datetime.now().strftime("%d %B, %Y")
+        speak(news if news else "I'm unable to fetch news at the moment.")
+        done=True
+    elif intent == "ip":
+        ip_address = get_ip()
+        speak(ip_address if ip_address else "Couldn't retrieve IP address.")
+        done=True
+    elif intent == "get_date":
+        current_date = datetime.datetime.now().strftime('%d %B, %Y')
         speak(f"Today's date is {current_date}")
-
-    # System operations
-    elif "ip" in query or "current location" in query:
-        ip = get_ip()
-        if ip:
-            speak(f"Your current IP address is {ip}.")
-            done = True
-    elif "weather" in query:
-        city = re.search(r"(in|of|for) ([a-zA-Z]*)", query)
-        if city:
-            city = city.group(2).strip()
-            weather = get_weather(city)
-            speak(f"The weather in {city} is: {weather}")
+        done=True
+    elif intent == "get_datetime":
+        date_time = datetime.datetime.now().strftime('%A, %d %B %Y, %I:%M %p')
+        speak(f"The current date and time is {date_time}")
+        done=True
+    elif intent == "weather":
+        weather_info = get_weather()
+        speak(f"The weather is: {weather_info}")
+        done=True
+    elif intent == "open_website":
+        if open_specified_website(query):
+            speak("Opening the website.")
         else:
-            weather = get_weather()
-            speak(f"The weather is: {weather}")
-        done = True
-
-    # Email functionality
-    elif "email" in query:
-        speak("Please say the recipient's email address.")
-        receiver_id = record()
-        while not check_email(receiver_id):
-            speak("Invalid email address. Please say it again.")
-            receiver_id = record()
-        
-        speak("Say the subject of the email.")
-        subject = record()
-        
-        speak("Say the body of the email.")
-        body = record()
-        
-        success = send_email(receiver_id, subject, body)
-        if success:
-            speak("Your email has been sent successfully.")
-        else:
-            speak("There was an error sending the email.")
-        done = True
-
-    # Other system tasks
-    elif "select text" in query:
+            speak("Unable to open website.")
+        done=True
+    elif intent == "select_text":
         sys_ops.select()
         speak("The text has been selected.")
-        done = True
-    elif "copy text" in query:
+        done=True
+    elif intent == "copy_text":
         sys_ops.copy()
         speak("The text has been copied.")
-        done = True
-    elif "paste text" in query:
+        done=True
+    elif intent == "paste_text":
         sys_ops.paste()
         speak("The text has been pasted.")
-        done = True
-    elif "open website" in query:
-        completed = open_specified_website(query)
-        if completed:
-            speak("Opening the website.")
-            done = True
-    elif "open app" in query:
-        completed = open_app(query)
-        if completed:
-            speak("Opening the app.")
-            done = True
-    elif "exit" in query or "terminate" in query or "quit" in query:
-        speak("thank you!")
+        done=True
+    elif intent == "get_data":
+        if "history" in query:
+            get_data()
+        else:
+            speak("I couldn't fetch the requested data.")
+        done=True
+    elif intent == "exit":
+        speak("Thank you! Goodbye.")
         exit(0)
+    elif intent == "email":
+        handle_email()
+        done=True
     if not done:
-                answer =tell_me_about(query)
-                if answer:
-                    speak(answer)
-                else:
-                    speak("Sorry, not able to answer your query")
-    return
+        answer = tell_me_about(query)
+        if answer:
+            speak(answer)
+            return answer
+        else:
+            speak("Sorry, I am not able to answer your query.")
+            return "No answer found."
 
+    return "Intent executed successfully."
 
 if __name__ == "__main__":
     listen_audio()
-
