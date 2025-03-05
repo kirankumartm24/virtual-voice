@@ -1,21 +1,17 @@
 from flask import Flask, request, jsonify
-import pyttsx3
-import speech_recognition as sr
+from flask_cors import CORS
 import datetime
 import pickle
+import re
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 import logging
-from gmail import *
-from apl import *
+from gmail import send_email  # Importing the correct function
+from api import *
 from system_operation import *
 from browsing import *
 from database import *
-from flask_cors import CORS
-app = Flask(__name__)
-CORS(app)  # Enable CORS
-
 
 # Suppress TensorFlow warnings
 tf.get_logger().setLevel("ERROR")
@@ -33,88 +29,103 @@ with open("tokenizer.pkl", "rb") as f:
 with open("label_encoder.pkl", "rb") as f:
     label_encoder = pickle.load(f)
 
-# Initialize speech recognition and text-to-speech
-recognizer = sr.Recognizer()
-engine = pyttsx3.init()
-engine.setProperty("rate", 185)
+# Initialize system operations
 sys_ops = SystemTasks()
 
-# Initialize Flask app
-#app = Flask(__name__)
+app = Flask(__name__)
+CORS(app)  # Enable Cross-Origin Requests
 
-@app.route("/process", methods=["POST"])
-def process():
-    """Process user input and return response."""
+@app.route("/predict", methods=["POST"])
+def predict():
+    if not request.is_json:
+        return jsonify({"response": "Invalid request format."})
+
     data = request.json
-    query = data.get("query")
+    query = data.get("query", "").lower()
     
     if not query:
-        return jsonify({"action": "speak", "message": "I didn't catch that. Please repeat."})
-    
-    intent = predict_intent(query)
-    
-    response = handle_intent(intent, query)
-    return jsonify(response)
+        return jsonify({"response": "I didn't catch that. Please repeat."})
 
-def predict_intent(text):
-    sequence = tokenizer.texts_to_sequences([text.lower()])
-    if not sequence or not sequence[0]:  # Handle unknown words
-        return None
-    padded_sequence = pad_sequences(sequence, padding="post")  # Dynamic padding
-    print("Padded Sequence Shape:", padded_sequence.shape)  # Debugging Line
+    sequence = tokenizer.texts_to_sequences([query])
+    if not sequence or not sequence[0]:
+        return jsonify({"response": "Sorry, I am not able to answer your query."})
 
+    padded_sequence = pad_sequences(sequence, padding="post")
     prediction = model.predict(padded_sequence)
-    predicted_label = label_encoder.inverse_transform([np.argmax(prediction)])
-    return predicted_label[0]
+    predicted_label = label_encoder.inverse_transform([np.argmax(prediction)])[0]
 
-def handle_intent(intent, query):
-    """Handle different intents and return a response."""
+    response_text = handle_intent(predicted_label, data)
+    return jsonify({"response": response_text})
+
+def handle_intent(intent, data):
+    query = data.get("query", "").lower()
+
     if intent == "get_time":
-        return {"action": "speak", "message": f"The time is {datetime.datetime.now().strftime('%I:%M %p')}"}
+        return f"The time is {datetime.datetime.now().strftime('%I:%M %p')}"
+    elif intent == "get_date":
+        return f"Today's date is {datetime.datetime.now().strftime('%d %B, %Y')}"
+    elif intent == "get_datetime":
+        return f"The current date and time is {datetime.datetime.now().strftime('%A, %d %B %Y, %I:%M %p')}"
     elif intent == "greeting":
-        return {"action": "speak", "message": "Hello! How can I assist you today?"}
+        return "Hello! How can I assist you today?"
     elif intent == "search_google":
         googleSearch(query)
-        return {"action": "speak", "message": "Here are the results I found on Google."}
+        return "Here are the results I found on Google."
     elif intent == "search_youtube":
         youtube(query)
-        return {"action": "speak", "message": "Here are the results from YouTube."}
+        return "Here are the results from YouTube."
     elif intent == "joke":
-        return {"action": "speak", "message": get_joke() or "Sorry, I couldn't find a joke right now."}
+        return get_joke() or "Sorry, I couldn't find a joke right now."
     elif intent == "news":
-        return {"action": "speak", "message": get_new() or "I'm unable to fetch news at the moment."}
+        return get_news() or "I'm unable to fetch news at the moment."
     elif intent == "ip":
-        return {"action": "speak", "message": get_ip() or "Couldn't retrieve IP address."}
-    elif intent == "get_date":
-        return {"action": "speak", "message": f"Today's date is {datetime.datetime.now().strftime('%d %B, %Y')}"}
-    elif intent == "get_datetime":
-        return {"action": "speak", "message": f"The current date and time is {datetime.datetime.now().strftime('%A, %d %B %Y, %I:%M %p')}"}
+        return get_ip() or "Couldn't retrieve IP address."
     elif intent == "weather":
-        return {"action": "speak", "message": f"The weather is: {get_weather()}"}
+        return get_weather()
     elif intent == "open_website":
-        return {"action": "speak", "message": "Opening the website."} if open_specified_website(query) else {"action": "speak", "message": "Unable to open website."}
+        return "Opening the website." if open_specified_website(query) else "Unable to open website."
+    elif intent == "movies" and "movies" in query: 
+        return get_popular_movies() 
+    elif intent == "tv_series" and "tv series" in query: 
+        return get_popular_tvseries() 
     elif intent == "select_text":
         sys_ops.select()
-        return {"action": "speak", "message": "The text has been selected."}
+        return "The text has been selected."
     elif intent == "copy_text":
         sys_ops.copy()
-        return {"action": "speak", "message": "The text has been copied."}
+        return "The text has been copied."
     elif intent == "paste_text":
         sys_ops.paste()
-        return {"action": "speak", "message": "The text has been pasted."}
+        return "The text has been pasted."
+    elif intent == "get_map":
+        return get_map()
     elif intent == "get_data":
-        return {"action": "speak", "message": "Fetching data."} if "history" in query else {"action": "speak", "message": "I couldn't fetch the requested data."}
+        return get_data() if "history" in query else "I couldn't fetch the requested data."
     elif intent == "exit":
-        return {"action": "speak", "message": "Thank you! Goodbye."}
+        return "Thank you! Goodbye."
     elif intent == "email":
-        return handle_email()
+        return handle_email(data)
     else:
-        answer = tell_me_about(query)
-        return {"action": "speak", "message": answer} if answer else {"action": "speak", "message": "Sorry, I am not able to answer your query."}
+        return tell_me_about(query)
 
-def handle_email():
-    """Handle email-related tasks."""
-    return {"action": "email", "message": "Please provide email details."}
+def handle_email(data):
+    receiver_email = data.get("email", "").strip()
+    subject = data.get("subject", "No Subject").strip()
+    body = data.get("body", "No Content").strip()
+
+    print("Received email request:", receiver_email, subject, body)
+    
+    # Validate Email Format
+    receiver_email = receiver_email.lower().replace(" at the rate ", "@").replace(" at ", "@").replace(" dot ", ".")
+    receiver_email = receiver_email.replace(" underscore ", "_").replace(" dash ", "-")
+    receiver_email = re.sub(r"\s+", "",receiver_email)
+    email_regex = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    if not receiver_email or not re.match(email_regex, receiver_email):
+        return "Invalid email address. Please enter a valid email."
+
+    success = send_email(receiver_email, subject, body)
+    return "Your email has been sent successfully." if success else "There was an error sending the email."
+
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)

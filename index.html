@@ -7,131 +7,214 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: white;
+            text-align: center;
+            background-color: hsla(204, 66%, 19%, 0.897);
+            color: rgba(255, 255, 255, 0.936);
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            height: 100vh;
-            margin: 0;
+            align-items: center;
         }
-        .chat-container {
-            width: 90%;
-            max-width: 400px;
-            height: 500px;
-            overflow-y: auto;
-            border-radius: 10px;
-            padding: 10px;
-            background-color: #1e1e1e;
-        }
-        .message {
-            padding: 10px;
-            margin: 5px;
-            border-radius: 10px;
-            max-width: 75%;
-            display: inline-block;
-            word-wrap: break-word;
-        }
-        .user {
-            background-color: #0084ff;
-            align-self: flex-end;
-            margin-left: auto;
-        }
-        .bot {
-            background-color: #444;
-            align-self: flex-start;
-            margin-right: auto;
+        .assistant-logo {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            margin-bottom: 20px;
         }
         .mic-button {
-            background-color: red;
-            color: white;
-            border: none;
-            padding: 15px;
+            width: 80px;
+            height: 80px;
+            background-color: transparent;
             border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             cursor: pointer;
+            transition: 0.3s;
+        }
+        .mic-button img {
+            width: 100%; 
+            height: 100%;
+            border-radius: 50%;
+            box-shadow: 0px 0px 15px rgba(170, 175, 76, 0.8);
+        }
+        .mic-button:hover img {
+            box-shadow: 0px 0px 25px rgb(5, 58, 85);
+        }
+        .listening {
+            animation: glow 1s infinite alternate;
+        }
+        @keyframes glow {
+            from { box-shadow: 0px 0px 15px rgba(9, 69, 112, 0.8); }
+            to { box-shadow: 0px 0px 30px rgb(13, 94, 145); }
+        }
+        #status {
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #chat-container {
+            width: 80%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
             margin-top: 20px;
-            font-size: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+            overflow-y: auto;
+            max-height: 300px;
         }
-        .mic-button:active {
-            background-color: darkred;
+        .chat-bubble {
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
         }
-        .typing {
-            color: #aaa;
-            font-style: italic;
-        }
+        .user { background: #1e88e5; align-self: flex-end; }
+        .assistant { background: #437fa0; align-self: flex-start; }
     </style>
 </head>
 <body>
+    <img src="C:\Users\L E N O V O\kiran\logo.jpg" alt="Assistant" class="assistant-logo">
+    <h1>Deep Talks</h1>
+    <div id="mic" class="mic-button" onclick="startListening()">
+        <img src="https://media.gettyimages.com/id/1290061049/vector/microphone-podcast-audio-icon-button.jpg?s=612x612&w=0&k=20&c=xr6l2H7qwBg_mMkm8xFWfE3r5ajcBMu1tFaqOA4YZ9w=" 
+             alt="Microphone" class="mic-icon">
+    </div>
 
-    <h1>Voice Assistant</h1>
-    <div class="chat-container" id="chat-container"></div>
-    <button class="mic-button" id="mic-btn">🎤</button>
+    <div id="status"></div>
+    <div id="chat-container"></div>
 
     <script>
-        const chatContainer = document.getElementById("chat-container");
-        const micButton = document.getElementById("mic-btn");
+        // Function to start listening to user's voice input
+        function startListening() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            document.getElementById('mic').classList.add('listening');
+            document.getElementById('status').innerText = "Listening...";
 
-        const recognition = window.SpeechRecognition || window.webkitSpeechRecognition 
-            ? new (window.SpeechRecognition || window.webkitSpeechRecognition)()
-            : null;
-
-        if (recognition) {
-            recognition.lang = "en-US";
-            recognition.continuous = false;
-
-            recognition.onstart = () => {
-                micButton.style.backgroundColor = "darkred";
-            };
-
-            recognition.onend = () => {
-                micButton.style.backgroundColor = "red";
-            };
+            recognition.start();
 
             recognition.onresult = async (event) => {
-                const userText = event.results[0][0].transcript;
-                addMessage(userText, "user");
-                await fetchResponse(userText);
+                document.getElementById('mic').classList.remove('listening');
+                document.getElementById('status').innerText = "Thinking...";
+
+                const userSpeech = event.results[0][0].transcript;
+                addMessage(userSpeech, 'user');
+
+                // Send the user's speech to the backend for processing
+                const response = await fetch('http://127.0.0.1:5000/predict', {  
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: userSpeech })
+                });
+
+                const data = await response.json();
+
+                document.getElementById('status').innerText = "";
+
+                // Handle email intent specifically
+                if (data.response === "Invalid email address. Please enter a valid email.") {
+                    askForEmailDetails();
+                    return;
+                }
+
+                // Display the assistant's response
+                addMessage(data.response, 'assistant');
+                speakResponse(data.response);
             };
-        } else {
-            alert("Speech Recognition is not supported in this browser.");
+
+            recognition.onerror = () => {
+                document.getElementById('mic').classList.remove('listening');
+                document.getElementById('status').innerText = "";
+                alert("Error recognizing speech. Try again.");
+            };
         }
 
+        // Function to speak the assistant's response
+        function speakResponse(text) {
+            const synth = window.speechSynthesis;
+            const utterance = new SpeechSynthesisUtterance(text);
+            synth.speak(utterance);
+        }
+
+        // Function to add a message to the chat container
         function addMessage(text, sender) {
-            const msgDiv = document.createElement("div");
-            msgDiv.classList.add("message", sender);
-            msgDiv.textContent = text;
-            chatContainer.appendChild(msgDiv);
+            const chatContainer = document.getElementById('chat-container');
+            const messageBubble = document.createElement('div');
+            messageBubble.classList.add('chat-bubble', sender);
+            messageBubble.innerText = text;
+            chatContainer.appendChild(messageBubble);
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        async function fetchResponse(userText) {
-            addMessage("Typing...", "bot");
-            
-            const response = await fetch("http://localhost:5000/voice", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ text: userText })
+        // Function to ask for email details
+        async function askForEmailDetails() {
+            let recipient = await getValidVoiceInput("Please say the recipient's email address.");
+            if (!recipient) return;
+
+            console.log("Captured recipient email:", recipient); // Debugging
+
+            let subject = await getValidVoiceInput("Please say the subject of the email.");
+            if (!subject) subject = "No Subject";
+
+            let body = await getValidVoiceInput("Please say the body of the email.");
+            if (!body) body = "No Content";
+
+            document.getElementById('status').innerText = "Thinking...";
+
+            // Send email details to the backend
+            const response = await fetch('http://127.0.0.1:5000/predict', {  
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    query: "send email", 
+                    email: recipient, 
+                    subject: subject, 
+                    body: body 
+                })
             });
 
             const data = await response.json();
-            document.querySelector(".typing").remove();
-
-            addMessage(data.reply, "bot");
-            speakText(data.reply);
+            document.getElementById('status').innerText = "";
+            addMessage(data.response, 'assistant');
+            speakResponse(data.response);
         }
 
-        function speakText(text) {
-            const speech = new SpeechSynthesisUtterance(text);
-            window.speechSynthesis.speak(speech);
-        }
+        // Function to get valid voice input from the user
+        async function getValidVoiceInput(promptText) {
+            speakResponse(promptText);
+            document.getElementById('status').innerText = promptText;
 
-        micButton.addEventListener("click", () => {
-            if (recognition) {
-                recognition.start();
+            let input = await getVoiceInput();
+
+            while (!input || input.trim() === "") {
+                speakResponse("I didn't catch that. Please say it again.");
+                input = await getVoiceInput();
             }
-        });
-    </script>
 
+            return input;
+        }
+
+        // Function to get voice input from the user
+        function getVoiceInput() {
+            return new Promise((resolve) => {
+                const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+                recognition.lang = 'en-US';
+                recognition.start();
+
+                recognition.onresult = (event) => {
+                    resolve(event.results[0][0].transcript);
+                };
+
+                recognition.onerror = () => {
+                    alert("Error recognizing speech. Try again.");
+                    resolve(null);
+                };
+            });
+        }
+    </script>
 </body>
 </html>

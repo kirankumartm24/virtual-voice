@@ -19,7 +19,7 @@
       {
         "tag": "ip",
         "patterns": [
-          "What is my IP address?", "Get my IP address", "Find IP address", "Tell IP address", "Show my IP",
+          "What is my IP address?", "Get my IP address", "Find IP address", "Tell IP address", "Show my IP","current location",
           "What’s my public IP?", "Find out my IP", "Tell me my network address", "Check my IP", "Give me my IP details"
         ]
       },
@@ -48,6 +48,14 @@
           "Get weather information", "Fetch weather information", "Fetch weather forecast",
           "What's the temperature outside?", "Is it going to rain today?", "Do I need an umbrella?",
           "Give me today's weather", "Tell me the weather for tomorrow", "How's the climate?"
+        ]
+      },
+      {
+        "tag": "get_map",
+        "patterns": [
+            "Show me a map", "Get a map of", "Find location on map", "Locate this place on map",
+            "Display a map", "Open a map", "Find directions to", "Where is this place?",
+            "Give me a route", "Navigate to"
         ]
       },
       {
@@ -101,7 +109,7 @@
         "patterns": [
           "Send an email", "Write an email", "Compose an email", "Send a message via email",
           "Draft an email", "Email someone", "I need to email", "Can you send an email for me?",
-          "Send an important email"
+          "Send an important email","send a mail","please send a mail"
         ]
       },
       {

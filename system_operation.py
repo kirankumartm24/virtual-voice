@@ -1,7 +1,6 @@
 import time
 from random import randint
 import subprocess
-import AppOpener
 from pynput.keyboard import Key, Controller
 
 class SystemTasks:
@@ -133,7 +132,6 @@ def open_app(query):
             path = app_path(app)
             subprocess.Popen(path)
             return True
-    AppOpener.run(query[5:])
     return True
 
 def take_note(note):

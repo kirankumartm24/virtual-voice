@@ -2,7 +2,6 @@ websites_dict = {
     "google": "https://www.google.com/",
     "gmail": "https://mail.google.com/mail/u/0/#inbox",
     "myclass": "https://myclass.lpu.in/",
-    "lpulive": "https://lpulive.lpu.in/login",
     "ums": "https://ums.lpu.in/lpuums/",
     "github": "https://github.com/",
     "youtube": "https://www.youtube.com/",
