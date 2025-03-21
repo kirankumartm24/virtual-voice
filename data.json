@@ -1,0 +1,181 @@
+{
+    "intents": [
+      {
+        "tag": "joke",
+        "patterns": [
+          "Tell me a joke", "Tell joke", "tell a funny joke", "Got any jokes?", "Make me laugh", "Say something funny",
+          "Tell a hilarious joke", "Can you crack a joke?", "Give me a good joke", "Tell me something funny", "Joke please",
+          "Got any good ones?", "Make me chuckle"
+        ]
+      },
+      {
+        "tag": "news",
+        "patterns": [
+          "Tell me news headlines", "What are today's top news?", "Tell news", "What are today's news headlines",
+          "Give me the latest news", "What's happening today?", "Any breaking news?", "Tell me the top stories",
+          "Read me the news", "Give me news updates", "News briefing please", "Tell me what's new"
+        ]
+      },
+      {
+        "tag": "ip",
+        "patterns": [
+          "What is my IP address?", "Get my IP address", "Find IP address", "Tell IP address", "Show my IP","current location",
+          "What’s my public IP?", "Find out my IP", "Tell me my network address", "Check my IP", "Give me my IP details"
+        ]
+      },
+      {
+        "tag": "movies",
+        "patterns": [
+          "Find trending movies", "List some trending movies", "List some popular movies", "Get some popular movies",
+          "Tell me some good movies", "What movies are trending?", "Give me movie suggestions", "Recommend a movie",
+          "Which movies are hot right now?", "What are the latest blockbusters?", "Show me popular films"
+        ]
+      },
+      {
+        "tag": "tv_series",
+        "patterns": [
+          "Find trending TV shows", "List some trending web series", "List some popular TV web series",
+          "Get some popular TV series", "Tell me some good web series", "Recommend a TV show",
+          "Which web series should I watch?", "What TV shows are trending?", "Best web series right now?",
+          "Any good TV recommendations?"
+        ]
+      },
+      {
+        "tag": "weather",
+        "patterns": [
+          "What's the weather today?", "Get weather report", "What's the weather forecast?",
+          "Fetch the weather report", "Get today's weather details", "Find weather details",
+          "Get weather information", "Fetch weather information", "Fetch weather forecast",
+          "What's the temperature outside?", "Is it going to rain today?", "Do I need an umbrella?",
+          "Give me today's weather", "Tell me the weather for tomorrow", "How's the climate?"
+        ]
+      },
+      {
+        "tag": "get_map",
+        "patterns": [
+            "Show me a map", "Get a map of", "Find location on map", "Locate this place on map",
+            "Display a map", "Open a map", "Find directions to", "Where is this place?",
+            "Give me a route", "Navigate to"
+        ]
+      },
+      {
+        "tag": "internet_speedtest",
+        "patterns": [
+          "Get my internet speed", "Check internet speed", "What is my internet speed?",
+          "How fast is my connection?", "Test my network speed", "Measure my download speed",
+          "Speed test please", "Check my ping", "Internet speed test now", "Tell me my upload speed"
+        ]
+      },
+      {
+        "tag": "system_stats",
+        "patterns": [
+          "Fetch system stats", "Get system resource consumption", "Get system stats", "Retrieve system stats",
+          "How is my system running?", "Check CPU usage", "Show me system performance",
+          "Get current RAM usage", "System diagnostics", "Give me a system summary"
+        ]
+      },
+      {
+        "tag": "image_generation",
+        "patterns": [
+          "Generate image", "Create image", "Generate image from text", "Make an image",
+          "Can you create a picture?", "Turn text into an image", "I need a generated picture",
+          "Create an AI-generated image", "Draw something for me"
+        ]
+      },
+      {
+        "tag": "get_time",
+        "patterns": [
+          "What time is it?", "Current time", "Tell me the time", "Time now",
+          "Can you tell me the time?", "Check the time for me", "What's the exact time?",
+          "Time please", "Give me the current time", "What's the clock say?"
+        ]
+      },
+      {
+        "tag": "greeting",
+        "patterns": [
+          "Hello", "Hi", "Hey", "What's up?", "Howdy", "Yo", "Good day", "Hi there",
+          "Greetings", "Hey, how's it going?", "Hey there!", "Sup?"
+        ]
+      },
+      {
+        "tag": "exit",
+        "patterns": [
+          "Quit", "Exit", "Terminate", "Close app", "Shut down", "End session",
+          "Stop", "Goodbye", "I'm done", "See you later", "Bye for now"
+        ]
+      },
+      {
+        "tag": "email",
+        "patterns": [
+          "Send an email", "Write an email", "Compose an email", "Send a message via email",
+          "Draft an email", "Email someone", "I need to email", "Can you send an email for me?",
+          "Send an important email","send a mail","please send a mail"
+        ]
+      },
+      {
+        "tag": "search_google",
+        "patterns": [
+          "Search Google for", "Find information on Google", "Google search", "Look up",
+          "Can you search for", "Find this on Google", "Google something for me",
+          "Look something up on Google"
+        ]
+      },
+      {
+        "tag": "search_youtube",
+        "patterns": [
+          "Search YouTube for", "Find a video on YouTube", "YouTube search", "Look up videos",
+          "Can you find a YouTube video?", "Find this video", "Look something up on YouTube"
+        ]
+      },
+      {
+        "tag": "get_date",
+        "patterns": [
+          "What's today's date?", "Tell me the date", "Current date", "What is the date today?",
+          "Give me today's date", "Check the date for me"
+        ]
+      },
+      {
+        "tag": "get_datetime",
+        "patterns": [
+          "Tell me the date and time", "Current date and time", "What is the time and date?",
+          "Give me the full date and time", "Check both time and date for me"
+        ]
+      },
+      {
+        "tag": "open_website",
+        "patterns": [
+          "Open a website", "Go to a website", "Visit a webpage", "Launch a website",
+          "Open a specific website", "Can you access a website?"
+        ]
+      },
+      {
+        "tag": "select_text",
+        "patterns": [
+          "Select text", "Highlight text", "Choose text", "Pick this text",
+          "Mark this text", "Text selection please"
+        ]
+      },
+      {
+        "tag": "copy_text",
+        "patterns": [
+          "Copy text", "Duplicate text", "Copy this for me", "Save text to clipboard",
+          "Copy selection", "Copy to clipboard"
+        ]
+      },
+      {
+        "tag": "paste_text",
+        "patterns": [
+          "Paste text", "Insert copied text", "Paste from clipboard", "Put copied text here",
+          "Insert selection", "Paste my copied text"
+        ]
+      },
+      {
+        "tag": "get_data",
+        "patterns": [
+          "Retrieve my data", "Fetch stored data", "Get saved history", "Show me my history",
+          "Find my stored info", "Display my saved data"
+        ]
+      }
+    ]
+  }
+  
