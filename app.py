@@ -128,6 +128,6 @@ def handle_email(data):
     success = send_email(receiver_email, subject, body)
     return "Your email has been sent successfully." if success else "There was an error sending the email."
 
-
+# Change this at the bottom of your app.py:
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
