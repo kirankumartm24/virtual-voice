@@ -11,6 +11,7 @@ from gmail import send_email  # Importing the correct function
 from api import *
 from system_operation import *
 from database import *
+import os
 
 # Suppress TensorFlow warnings
 tf.get_logger().setLevel("ERROR")
@@ -129,5 +130,6 @@ def handle_email(data):
     return "Your email has been sent successfully." if success else "There was an error sending the email."
 
 
+# Change this at the bottom of your app.py:
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
